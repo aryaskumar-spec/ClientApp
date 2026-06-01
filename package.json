@@ -8,6 +8,7 @@
   },
   "scripts": {
     "apiLogin": "npx playwright test --grep @Api",
-    "client": "npx playwright test client"
+    "client": "npx playwright test client",
+    "azureRun": "npx playwright test client --config=playwright.service.config.ts --workers=4"
   }
 }
