@@ -1,5 +1,5 @@
-import { chromium, defineConfig, devices } from '@playwright/test';
-import { siteConfigs } from './utils/testUsers';
+import { defineConfig } from '@playwright/test';
+import { siteConfig } from './utils/testUsers';
 
 export default defineConfig({
   testDir: './tests',
@@ -13,18 +13,20 @@ export default defineConfig({
   ],
   use: {
     browserName: 'chromium',
-    headless: true,
+    headless: false,
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
   globalSetup: './global-setup.ts',
-  projects: siteConfigs.map((site) => ({
-    name: site.name,
-    testDir: `./tests/${site.name}`,
-    workers: site.workers,   
-    use: {
-      baseURL: site.baseURL,
-    },
-  })),
+  projects: [
+    {
+      name: siteConfig.name,
+      testDir: `./tests/${siteConfig.name}`,
+      workers: siteConfig.workers,
+      use: {
+        baseURL: siteConfig.baseURL,
+      },
+    }
+  ]
 });

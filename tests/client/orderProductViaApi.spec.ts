@@ -1,14 +1,14 @@
 import { expect, request } from '@playwright/test';
 import { test } from '../../utils/fixture';
 import { ApiUtils } from '../../utils/ApiUtils';
-import { siteConfigs } from '../../utils/testUsers';
+import { siteConfig } from '../../utils/testUsers';
 
 const orderPayload = { orders: [{ country: "Angola", productOrderedId: "6960ea76c941646b7a8b3dd5" }] }
 
 test('Check whether created orderid is visible in history page', async ({ page }, testInfo) => {
-    const baseURL = siteConfigs.find(s => s.name === 'client')?.baseURL;
+    const baseURL = siteConfig.baseURL;
     const apiContext = await request.newContext();
-    const apiUtils = new ApiUtils(apiContext, testInfo.workerIndex, 'client');
+    const apiUtils = new ApiUtils(apiContext, testInfo.workerIndex);
     var orderId = await apiUtils.createOrder(orderPayload);
     await page.goto(baseURL!);
 

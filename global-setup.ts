@@ -1,5 +1,5 @@
 import { request, chromium } from '@playwright/test';
-import { siteConfigs } from './utils/testUsers';
+import { siteConfig } from './utils/testUsers';
 import * as fs from 'fs';
 
 // Check if stored token is still valid
@@ -44,16 +44,14 @@ async function isTokenValid(storageFilePath: string, site: any): Promise<boolean
 
 async function globalSetup() {
   if (!fs.existsSync('storage')) fs.mkdirSync('storage');
-
-  for (const site of siteConfigs) {
-    const siteFolder = `storage/${site.name}`;
+    const siteFolder = `storage/${siteConfig.name}`;
     if (!fs.existsSync(siteFolder)) fs.mkdirSync(siteFolder);
 
-    for (let i = 0; i < site.workers; i++) {
+    for (let i = 0; i < siteConfig.workers; i++) {
       const storageFilePath = `${siteFolder}/user-${i}.json`;
 
       // ✅ Skip login if token is still valid
-      if (await isTokenValid(storageFilePath, site)) {
+      if (await isTokenValid(storageFilePath, siteConfig)) {
         //console.log(`⏭️ Skipping login for worker ${i} — token still valid`);
         continue;
       }
@@ -61,11 +59,11 @@ async function globalSetup() {
       // Step 1 — API login
       const apiContext = await request.newContext();
       const response = await apiContext.post(
-        `${site.apiBaseURL}/${site.loginEndpoint}`,
+        `${siteConfig.apiBaseURL}/${siteConfig.loginEndpoint}`,
         {
           data: {
-            userEmail: site.users[i].username,
-            userPassword: site.users[i].password,
+            userEmail: siteConfig.users[i].username,
+            userPassword: siteConfig.users[i].password,
           }
         }
       );
@@ -75,14 +73,14 @@ async function globalSetup() {
       const userId = body.userId;  // ← check exact key from API response
 
       if (!token) {
-        throw new Error(`❌ Login failed for worker ${i} — ${site.users[i].username}`);
+        throw new Error(`❌ Login failed for worker ${i} — ${siteConfig.users[i].username}`);
       }
 
       // Step 2 — Open browser, inject token into localStorage
       const browser = await chromium.launch();
       const context = await browser.newContext();
       const page = await context.newPage();
-      await page.goto(site.baseURL);
+      await page.goto(siteConfig.baseURL);
 
       await page.evaluate(({ t, uid }) => {
         localStorage.setItem('token', t);
@@ -94,8 +92,7 @@ async function globalSetup() {
       await browser.close();
       await apiContext.dispose();
 
-      console.log(`✅ [${site.name}] Token, userId stored for worker ${i} — ${site.users[i].username}`);
+      console.log(`✅ [${siteConfig.name}] Token, userId stored for worker ${i} — ${siteConfig.users[i].username}`);
     }
   }
-}
 export default globalSetup;

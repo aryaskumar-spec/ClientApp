@@ -1,10 +1,10 @@
 import { expect } from '@playwright/test'
 import { test } from '../../utils/fixture'
-import { siteConfigs } from '../../utils/testUsers';
+import { siteConfig } from '../../utils/testUsers';
 
 const GET_ORDER_DETAILS_BY_ID = "https://rahulshettyacademy.com/api/ecom/order/get-orders-details?id="
 
-const BASE_URL = siteConfigs.find(s => s.name === 'client')?.baseURL || "https://rahulshettyacademy.com/client/#/auth/login";
+const BASE_URL = siteConfig.baseURL || "https://rahulshettyacademy.com/client/#/auth/login";
 
 test('Ensure that error message is shown on trying to view order details forbidden to user', async ({ page }) => {
     await page.goto(BASE_URL);

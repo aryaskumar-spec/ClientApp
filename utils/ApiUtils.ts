@@ -1,37 +1,28 @@
 import { APIRequestContext } from '@playwright/test';
-import { siteConfigs } from './testUsers';
-import { getTokenFromStorage } from './storageHelper';
-import { getUserIdFromStorage } from './storageHelper';
+import { siteConfig } from './testUsers';
+import { getTokenFromStorage, getUserIdFromStorage } from './storageHelper';
 
 export class ApiUtils {
     private apiContext: APIRequestContext;
     private token: string;
-    private siteName: string;
     private userId: string;
 
-    private get siteConfig() {
-        const config = siteConfigs.find(s => s.name === this.siteName);
-        if (!config) throw new Error(`❌ Site config not found for: ${this.siteName}`);
-        return config;
+    constructor(apiContext: APIRequestContext, workerIndex: number){
+        this.apiContext = apiContext;
+        this.token = getTokenFromStorage(workerIndex)
+        this.userId = getUserIdFromStorage(workerIndex)
     }
 
     private get ORDER_CREATE_URL() {
-        return `${this.siteConfig.apiBaseURL}order/create-order`;
+        return `${siteConfig.apiBaseURL}order/create-order`;
     }
 
     private get REMOVE_FROM_CART_URL() {
-        return `${this.siteConfig.apiBaseURL}user/remove-from-cart/`;
+        return `${siteConfig.apiBaseURL}user/remove-from-cart/`;
     }
 
     private get USER_CART() {
-        return `${this.siteConfig.apiBaseURL}user/get-cart-products/${this.userId}`;
-    }
-
-    constructor(apiContext: APIRequestContext, workerIndex: number, siteName: string = 'client') {
-        this.apiContext = apiContext;
-        this.token = getTokenFromStorage(workerIndex, siteName)
-        this.userId = getUserIdFromStorage(workerIndex, siteName)
-        this.siteName = siteName;
+        return `${siteConfig.apiBaseURL}user/get-cart-products/${this.userId}`;
     }
 
     // ── Order ──────────────────────────────────────────────

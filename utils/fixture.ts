@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { siteConfigs } from './testUsers';
+import { siteConfig } from './testUsers';
 
 type TestData = {
   productName: string,
@@ -15,14 +15,9 @@ type Fixtures = {
 }
 
 export const test = base.extend<Fixtures>({
-  page: async ({ page, browser }, use, testInfo) => {
-    const projectName = testInfo.project.name;
-
-    const siteConfig = siteConfigs.find(s => s.name === projectName);
-    if (!siteConfig) throw new Error(`❌ Site config not found for: ${projectName}`);
-
-    const workerIndex = testInfo.workerIndex % siteConfigs.find(s => s.name === 'client')!.workers;
-    const storageState = `storage/${projectName}/user-${workerIndex}.json`;
+  page: async ({ browser }, use, testInfo) => {
+    const workerIndex = testInfo.workerIndex % siteConfig.workers;
+    const storageState = `storage/${siteConfig.name}/user-${workerIndex}.json`;
 
     const context = await browser.newContext({ storageState });
     const workerPage = await context.newPage();

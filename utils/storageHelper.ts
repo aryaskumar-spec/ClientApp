@@ -1,16 +1,13 @@
 import * as fs from 'fs';
-import { siteConfigs } from './testUsers';
+import { siteConfig } from './testUsers';
 
-function getCappedWorkerIndex(workerIndex: number, siteName: string): number {
-  const siteConfig = siteConfigs.find(s => s.name === siteName);
-  if (!siteConfig) throw new Error(`❌ Site config not found for: ${siteName}`);
-  return workerIndex % siteConfig.workers;  // ← cap to available users
-}
+function getCappedWorkerIndex(workerIndex: number): number {
+  return workerIndex % siteConfig.workers; } // ← cap to available users
 
-export function getTokenFromStorage(workerIndex: number, siteName: string): string {
-  const cappedIndex = getCappedWorkerIndex(workerIndex, siteName);  // ← use capped
+export function getTokenFromStorage(workerIndex: number): string {
+  const cappedIndex = getCappedWorkerIndex(workerIndex);  // ← use capped
   const storageState = JSON.parse(
-    fs.readFileSync(`storage/${siteName}/user-${cappedIndex}.json`, 'utf-8')
+    fs.readFileSync(`storage/${siteConfig.name}/user-${cappedIndex}.json`, 'utf-8')
   );
 
   const origin = storageState.origins?.find((o: any) =>
@@ -26,9 +23,10 @@ export function getTokenFromStorage(workerIndex: number, siteName: string): stri
   return token;
 }
 
-export function getUserIdFromStorage(workerIndex: number, siteName: string): string {
+export function getUserIdFromStorage(workerIndex: number): string {
+  const cappedIndex = getCappedWorkerIndex(workerIndex);
   const storageState = JSON.parse(
-    fs.readFileSync(`storage/${siteName}/user-${workerIndex}.json`, 'utf-8')
+    fs.readFileSync(`storage/${siteConfig.name}/user-${cappedIndex}.json`, 'utf-8')
   );
 
   const origin = storageState.origins?.find((o: any) =>
