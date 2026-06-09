@@ -14,7 +14,7 @@ export class CartPage {
 
     async clearCart(workerIndex: number): Promise<void> {
         const apiContext = await request.newContext();
-        const apiUtils = new ApiUtils(apiContext, workerIndex, 'client');
+        const apiUtils = new ApiUtils(apiContext, workerIndex);
         const cartItems = await apiUtils.getCartItems()
         if (!cartItems || cartItems.length === 0) {
             //console.log('🛒 Cart is already empty');

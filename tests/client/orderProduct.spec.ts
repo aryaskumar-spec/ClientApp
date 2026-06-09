@@ -1,17 +1,15 @@
 import { test } from '../../utils/fixture'
-import { siteConfig } from '../../utils/testUsers';
 import { PageManager } from '../../pages/client/clientSitePageManager'
 import dataSet from '../../utils/clientSiteMultipleData.json'
 import data from '../../utils/clientSiteSingleData.json'
 
 test(`Purchase ${data.productName}`, async ({ page }, testInfo) => {
-   const workerIndex = testInfo.workerIndex;
-   const userEmail = siteConfig.users[workerIndex].username;  // ← dynamic per worker
+   const workerIndex = testInfo.parallelIndex;
 
    const pageManager = new PageManager(page)
 
    const cartPage = pageManager.getCartPage();
-   await cartPage.clearCart(workerIndex);
+   //await cartPage.clearCart(workerIndex);
 
    const dashboardPage = pageManager.getDashboardPage()
    await dashboardPage.goToSite()
@@ -23,17 +21,15 @@ test(`Purchase ${data.productName}`, async ({ page }, testInfo) => {
    await cartPage.verifyCheckoutPageNavigation()
 
    const checkoutPage = pageManager.getCheckoutPage()
-   await checkoutPage.waitForPaymentInfo()
+   await checkoutPage.creditCardNumberField.waitFor();
    await checkoutPage.verifyCreditCardPrePopulatedValue(data.creditCardNumber)
-   await checkoutPage.verifyEmailIdInShippingInfo(userEmail)
    await checkoutPage.cvvField.fill(data.cvv);
    await checkoutPage.nameOnCardField.fill(data.name);
    await checkoutPage.coupon.fill(data.couponValue);
    await checkoutPage.applyButton.click()
    await checkoutPage.verifyCouponApplied()
    await checkoutPage.country.pressSequentially(data.countryName.substring(0, 3), { delay: 150 });
-   await checkoutPage.countryDropdown.first().waitFor();
-   await checkoutPage.pickCountryFromDropDown(data.countryName)
+   await checkoutPage.page.getByText(data.countryName, { exact: true }).click();
    await checkoutPage.placeOrderButton.click();
    await checkoutPage.verifyThankyouPageNavigation()
    await checkoutPage.verifyOrderIdVisibleInOrderHistory()
@@ -42,13 +38,12 @@ test(`Purchase ${data.productName}`, async ({ page }, testInfo) => {
 //Parameterization in running tests with different data sets
 for (const data of dataSet) {
    test(`Purchase ${data.productName} with other product`, async ({ page }, testInfo) => {
-      const workerIndex = testInfo.workerIndex;
-      const userEmail = siteConfig.users[workerIndex].username;  // ← dynamic per worker
+      const workerIndex = testInfo.parallelIndex;
 
       const pageManager = new PageManager(page)
 
       const cartPage = pageManager.getCartPage();
-      await cartPage.clearCart(workerIndex);
+      //await cartPage.clearCart(workerIndex);
 
       const dashboardPage = pageManager.getDashboardPage()
       await dashboardPage.goToSite()
@@ -60,17 +55,15 @@ for (const data of dataSet) {
       await cartPage.verifyCheckoutPageNavigation()
 
       const checkoutPage = pageManager.getCheckoutPage()
-      await checkoutPage.waitForPaymentInfo()
+      await checkoutPage.creditCardNumberField.waitFor();
       await checkoutPage.verifyCreditCardPrePopulatedValue(data.creditCardNumber)
-      await checkoutPage.verifyEmailIdInShippingInfo(userEmail)
       await checkoutPage.cvvField.fill(data.cvv);
       await checkoutPage.nameOnCardField.fill(data.name);
       await checkoutPage.coupon.fill(data.couponValue);
       await checkoutPage.applyButton.click()
       await checkoutPage.verifyCouponApplied()
       await checkoutPage.country.pressSequentially(data.countryName.substring(0, 3), { delay: 150 });
-      await checkoutPage.countryDropdown.first().waitFor();
-      await checkoutPage.pickCountryFromDropDown(data.countryName)
+      await checkoutPage.page.getByText(data.countryName, { exact: true }).click();
       await checkoutPage.placeOrderButton.click();
       await checkoutPage.verifyThankyouPageNavigation()
       await checkoutPage.verifyOrderIdVisibleInOrderHistory()

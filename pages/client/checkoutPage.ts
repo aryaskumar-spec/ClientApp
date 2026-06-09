@@ -9,33 +9,16 @@ export class CheckoutPage {
     readonly applyButton: Locator
     readonly placeOrderButton: Locator
     readonly country: Locator
-    readonly countryDropdown: Locator
 
     constructor(page: Page) {
         this.page = page
-        this.creditCardNumberField = page.locator('div.form__cc div.row').filter({ hasText: 'Credit Card Number' }).locator('input')
-        this.cvvField = page.locator('div.form__cc div.row').locator('div.field.small:has(span.numberCircle) input')
-        this.nameOnCardField = page.locator('div.form__cc div.row').locator('div.field:has(div.title:text-is("Name on Card")) input')
-        this.coupon = page.locator('input[name="coupon"]')
+        this.creditCardNumberField = page.getByRole('textbox').nth(0)
+        this.cvvField = page.getByRole('textbox').nth(1)
+        this.nameOnCardField = page.getByRole('textbox').nth(2)
+        this.coupon = page.getByRole('textbox').nth(3)
         this.applyButton = page.getByRole('button', { name: 'Apply Coupon' })
-        this.placeOrderButton = page.locator('a:has-text("PLACE ORDER")');
+        this.placeOrderButton = page.getByText('Place Order');
         this.country = page.getByPlaceholder("Select Country")
-        this.countryDropdown = page.locator(".ta-results button")
-    }
-
-    async waitForPaymentInfo() {
-        await this.page.locator('div.payment__info').waitFor();
-    }
-
-    async pickCountryFromDropDown(countryName: string) {
-        const optionsCount = await this.countryDropdown.count();
-        for (let i = 0; i < optionsCount; ++i) {
-            const text = await this.countryDropdown.nth(i).textContent();
-            if (text?.trim().toLowerCase() === countryName.trim().toLowerCase()) {
-                await this.countryDropdown.nth(i).click();
-                break;
-            }
-        }
     }
 
     //Assert that credit card number field is not empty and has the expected value

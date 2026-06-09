@@ -1,6 +1,6 @@
 const ExcelJS = require('exceljs')
 
-const filePath = "/home/aryaskumar/Desktop/ExcelTesting/download.xlsx"
+const filePath = "/home/aryaskumar/Downloads/download.xlsx"
 const searchText = "Mango"
 const replaceText = "IPhone"
 let replaceTextDetails = { searchText: "Mango", replaceText: "IPhone"}
