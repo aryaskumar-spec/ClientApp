@@ -31,7 +31,7 @@ export class CartPage {
     }
 
     getProductBuyNow(productName: string) {
-        return this.cart.filter({ hasText: `${productName}` }).getByRole('button', { name: 'Buy Now' }).first()
+        return this.cart.filter({ hasText: productName }).getByRole('button', { name: 'Buy Now' }).first()
     }
 
     async verifyCheckoutPageNavigation() {
