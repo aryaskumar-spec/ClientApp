@@ -27,6 +27,15 @@ export default defineConfig({
       use: {
         baseURL: siteConfig.baseURL,
       },
+    },
+    {
+      name: 'generated',
+      testDir: './generated/tests',
+      workers: 1,
+      use: {
+        baseURL: siteConfig.baseURL,
+        headless: true,
+      },
     }
   ]
 });

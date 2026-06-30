@@ -44,3 +44,29 @@ A Playwright e2e test automation framework for the Rahul Shetty Academy e-commer
 | All utility files reference | `utilities.md` |
 | Test data sources and selection | `test-data-management.md` |
 | GitHub Actions, Azure config | `ci-cd.md` |
+
+The framework supports AI generated automation.
+
+Generation flow
+
+GitHub Issue
+
+↓
+
+GitHub MCP
+
+↓
+
+Prompt Validation
+
+↓
+
+Generated Page Objects
+
+↓
+
+Generated Tests
+
+Generated artifacts are isolated under
+
+generated/

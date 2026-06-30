@@ -131,3 +131,17 @@ Rules: `Promise<void>` return, `workerIndex` as parameter (never hardcoded), no 
 - No hardcoded test data — accept as method parameters
 - No imports from `fixture.ts`
 - No `page.waitForTimeout()`
+
+Before creating a new Page Object
+
+Inspect
+
+pages/
+
+Reuse existing Page Objects whenever possible.
+
+Create a new Page Object only when no suitable implementation exists.
+
+New Page Objects must be placed under
+
+generated/pages/

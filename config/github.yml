@@ -1,0 +1,10 @@
+repository:
+  owner: aryaskumar-spec
+  repo: ClientApp
+
+authentication:
+  provider: github-mcp
+
+defaults:
+  includeComments: true
+  includeAcceptanceCriteria: true

@@ -97,3 +97,17 @@ ClientApp/
 - `utils/` — no Playwright `test()` blocks, no page navigation logic
 - `storage/` — no manually created files, no committed files
 - `jsFiles/` — no TypeScript, no Playwright test imports
+
+## AI Generated Code
+
+AI generated Page Objects
+
+generated/pages/
+
+AI generated tests
+
+generated/tests/
+
+Do not modify handwritten framework files.
+
+Inspect existing framework before generating code.

@@ -6,11 +6,13 @@
     "@azure/identity": "^4.13.1",
     "@azure/playwright": "^1.1.5",
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.9.1"
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.4"
   },
   "scripts": {
     "apiLogin": "npx playwright test --grep @Api",
     "client": "npx playwright test client",
-    "azureRun": "npx playwright test client --config=playwright.service.config.ts --workers=4"
+    "azureRun": "npx playwright test client --config=playwright.service.config.ts --workers=4",
+    "gen:validate": "npx playwright test --project=generated --reporter=list"
   }
 }
