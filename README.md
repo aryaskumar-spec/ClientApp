@@ -366,3 +366,6 @@ cp .kiro/settings/mcp.example.json .kiro/settings/mcp.json
 2. Generate a GitHub Personal Access Token.
 3. Replace `<YOUR_GITHUB_PAT>` in `.kiro/settings/mcp.json` with your token.
 4. Restart Kiro.
+
+## Prompt to generate testcases and raise pull request
+Generate a Playwright test from GitHub Issue #${issueId}
