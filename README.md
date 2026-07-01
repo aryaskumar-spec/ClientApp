@@ -259,7 +259,7 @@ on:
     branches: [main, master]
 ```
 
-CI uses Azure Playwright Testing Service with OIDC authentication (no stored secrets). Required GitHub secrets:
+CI can use Azure Playwright Testing Service with OIDC authentication (no stored secrets). Currently its not used as the subscription has expired. Required GitHub secrets:
 
 | Secret | Purpose |
 |--------|---------|
@@ -274,6 +274,21 @@ Required GitHub variable:
 | `PLAYWRIGHT_SERVICE_URL` | Azure Playwright Testing endpoint |
 
 ---
+
+Replace Test Run command with below codes in playwright.yml, to make use of Azure Playwright Testing Service
+
+---------------
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Run Playwright tests
+      env:
+        PLAYWRIGHT_SERVICE_URL: ${{ vars.PLAYWRIGHT_SERVICE_URL }}
+      run: npm run client
 
 ## Framework Architecture
 
