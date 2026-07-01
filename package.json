@@ -13,6 +13,9 @@
     "apiLogin": "npx playwright test --grep @Api",
     "client": "npx playwright test client",
     "azureRun": "npx playwright test client --config=playwright.service.config.ts --workers=4",
-    "gen:validate": "npx playwright test --project=generated --reporter=list"
+    "gen:validate:client": "npx playwright test --project=generated-client --reporter=list",
+    "gen:validate:saucedemo": "npx playwright test --project=generated-saucedemo --reporter=list",
+    "gen:validate:conduit": "npx playwright test --project=generated-conduit --reporter=list",
+    "gen:validate": "npx playwright test --project=generated-client --reporter=list"
   }
 }

@@ -100,14 +100,41 @@ ClientApp/
 
 ## AI Generated Code
 
-AI generated Page Objects
+Generated artifacts are organised by feature name, extracted from the `[featureName]` tag in the GitHub Issue title.
 
-generated/pages/
+```
+generated/
+├── pages/
+│   ├── client/          ← AI-generated Page Objects for client site
+│   ├── saucedemo/       ← AI-generated Page Objects for saucedemo
+│   └── <featureName>/   ← AI-generated Page Objects for any other site
+└── tests/
+    ├── client/          ← AI-generated tests for client site
+    ├── saucedemo/       ← AI-generated tests for saucedemo
+    └── <featureName>/   ← AI-generated tests for any other site
+```
 
-AI generated tests
+Auth utilities for new sites live under their own subfolder in `utils/`:
 
-generated/tests/
+```
+utils/
+└── saucedemo/
+    └── ApiUtils.ts      ← exports getToken(), saucedemoConfig
+└── <featureName>/
+    └── ApiUtils.ts
+```
 
-Do not modify handwritten framework files.
+### Rules
 
-Inspect existing framework before generating code.
+- Never modify handwritten framework files under `pages/`, `tests/`, or top-level `utils/*.ts`.
+- Inspect `generated/pages/<featureName>/` before generating new Page Objects — reuse existing ones.
+- For non-client features, use Playwright MCP to inspect the live page before writing locators.
+- Issue titles must follow the format: `[featureName] <description>` — generation is rejected otherwise.
+
+### Per-feature validation scripts
+
+| Feature     | Script |
+|-------------|--------|
+| `client`    | `npm run gen:validate:client` |
+| `saucedemo` | `npm run gen:validate:saucedemo` |
+| `conduit`   | `npm run gen:validate:conduit` |

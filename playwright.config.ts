@@ -20,6 +20,7 @@ export default defineConfig({
   },
   globalSetup: './global-setup.ts',
   projects: [
+    // ── Handwritten tests ──────────────────────────────────────────
     {
       name: siteConfig.name,
       testDir: `./tests/${siteConfig.name}`,
@@ -28,14 +29,35 @@ export default defineConfig({
         baseURL: siteConfig.baseURL,
       },
     },
+
+    // ── Generated tests — one project per feature ──────────────────
     {
-      name: 'generated',
-      testDir: './generated/tests',
+      name: 'generated-client',
+      testDir: './generated/tests/client',
       workers: 1,
       use: {
         baseURL: siteConfig.baseURL,
         headless: true,
       },
-    }
+    },
+    {
+      name: 'generated-saucedemo',
+      testDir: './generated/tests/saucedemo',
+      workers: 1,
+      use: {
+        baseURL: 'https://www.saucedemo.com',
+        headless: true,
+      },
+    },
+    {
+      name: 'generated-conduit',
+      testDir: './generated/tests/conduit',
+      workers: 1,
+      use: {
+        baseURL: 'https://conduit.bonfire.com.br',
+        headless: true,
+      },
+    },
+    // Add new feature projects above this line following the same pattern
   ]
 });

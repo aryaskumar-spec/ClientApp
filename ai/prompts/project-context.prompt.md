@@ -1,26 +1,31 @@
 # Project Context
 
-## Application
+## Applications Under Test
 
-Rahul Shetty Academy e-commerce client app
-URL: https://rahulshettyacademy.com/client
+| Feature name | URL | Notes |
+|--------------|-----|-------|
+| `client`     | https://rahulshettyacademy.com/client | Handwritten POs in `pages/client/` |
+| `saucedemo`  | https://www.saucedemo.com | AI-generated only |
+| `conduit`    | https://conduit.bonfire.com.br | AI-generated only |
+
+Feature name is always taken from the issue title: `[featureName] <description>`
 
 ---
 
 ## Framework
 
 Playwright with TypeScript, Page Object Model (POM).
-Custom test fixture in `utils/fixture.ts`.
-PageManager pattern — all page objects accessed via `PageManager`.
+Custom test fixture in `utils/fixture.ts` (client only).
+PageManager pattern — for `client` only. Non-client features instantiate page objects directly.
 
 ---
 
-## Actual Folder Structure
+## Folder Structure
 
 ```
 pages/
-└── client/
-    ├── clientSitePageManager.ts   ← PageManager — always use this
+└── client/                          ← handwritten POs for client site (DO NOT MODIFY)
+    ├── clientSitePageManager.ts
     ├── loginPage.ts
     ├── dashboardPage.ts
     ├── cartPage.ts
@@ -28,104 +33,117 @@ pages/
     └── registerUserPage.ts
 
 tests/
-└── client/
+└── client/                          ← handwritten tests for client site (DO NOT MODIFY)
     └── *.spec.ts
 
-utils/
-    ├── fixture.ts                 ← custom test fixture (import test from here)
-    ├── testUsers.ts               ← siteConfig, credentials
+utils/                               ← flat files are client-specific (DO NOT MODIFY)
+    ├── fixture.ts
+    ├── testUsers.ts
     ├── ApiUtils.ts
     ├── storageHelper.ts
     ├── clientSiteSingleData.json
     └── clientSiteMultipleData.json
+utils/
+└── saucedemo/
+    └── ApiUtils.ts                  ← per-feature auth utility
+└── <featureName>/
+    └── ApiUtils.ts
 
 generated/
-├── pages/                         ← AI generated Page Objects go here
-└── tests/                         ← AI generated tests go here
+├── pages/
+│   ├── client/                      ← AI-generated POs for client
+│   ├── saucedemo/                   ← AI-generated POs for saucedemo
+│   └── <featureName>/               ← AI-generated POs for other features
+└── tests/
+    ├── client/                      ← AI-generated tests for client
+    ├── saucedemo/                   ← AI-generated tests for saucedemo
+    └── <featureName>/               ← AI-generated tests for other features
 ```
 
 ---
 
-## Existing Page Objects
+## Client Site — Existing Page Objects
 
-Inspect `pages/client/` before generating anything.
+Inspect `pages/client/` before generating anything for `[client]` issues.
 
 Existing pages: `loginPage.ts`, `dashboardPage.ts`, `cartPage.ts`, `checkoutPage.ts`, `registerUserPage.ts`.
+
+Also check `generated/pages/client/` for any previously AI-generated pages.
 
 Reuse them — never duplicate.
 
 ---
 
-## New Page Objects
+## Non-Client Sites — Page Object Discovery
 
-Only create a new Page Object if no suitable one exists in `pages/client/`.
-
-Place new Page Objects under:
-```
-generated/pages/<FeatureName>Page.ts
-```
-
-Example: `generated/pages/ProductPage.ts`
+For `[saucedemo]`, `[conduit]`, and other features:
+1. Check `generated/pages/<featureName>/` for any existing AI-generated Page Objects first.
+2. If a Page Object for the needed page already exists — reuse it.
+3. If missing — use Playwright MCP to navigate and snapshot the live page, then generate.
 
 ---
 
-## Test Imports — Choosing the Right `test` Import
+## Import Paths by Feature and Test Type
 
-The correct import depends on whether the test requires a pre-authenticated browser session.
-
-### Tests that start from a logged-in state (e.g. dashboard, cart, checkout, order history)
-
-Use the custom fixture — it injects a pre-authenticated `page`:
-
+### `[client]` — test starts from authenticated state (dashboard, cart, checkout, etc.)
 ```typescript
-import { test } from '../../utils/fixture'
+import { test } from '../../../utils/fixture'
 import { expect } from '@playwright/test'
-import { PageManager } from '../../pages/client/clientSitePageManager'
+import { PageManager } from '../../../pages/client/clientSitePageManager'
 ```
 
-### Tests that navigate to the login page themselves (e.g. invalid credentials, registration)
-
-Use base Playwright `test` directly — the custom fixture loads stored auth state which
-will conflict with manual navigation to the login page and cause the browser context to close:
-
+### `[client]` — test navigates to login or register page manually
 ```typescript
 import { test, expect } from '@playwright/test'
 ```
+(Do NOT use `utils/fixture` — it loads stored auth state which conflicts with manual login navigation)
 
-**Decision rule:**
-- Does the test call `goToSite()` on the login/register page and interact with the login form? → use `@playwright/test`
-- Does the test start from an already-authenticated page (dashboard, cart, etc.)? → use `utils/fixture`
+### `[saucedemo]` or any non-client feature
+```typescript
+import { test, expect } from '@playwright/test'
+import { saucedemoConfig } from '../../../utils/saucedemo/ApiUtils'
+import { LoginPage } from '../../pages/saucedemo/LoginPage'
+```
+
+All paths are relative from the test file location:
+- `generated/tests/<featureName>/` → `../../../` to reach project root
 
 ---
 
-## PageManager Usage
+## PageManager Usage (client only)
 
-Always instantiate `PageManager` and use its getters. Never instantiate page objects directly.
+Always instantiate `PageManager` and use its getters. Never instantiate page objects directly in client tests that use the fixture.
 
 ```typescript
 const pageManager = new PageManager(page)
 const dashboardPage = pageManager.getDashboardPage()
-const cartPage = pageManager.getCartPage()
+```
+
+For non-client features, instantiate the page object directly:
+```typescript
+const loginPage = new LoginPage(page)
 ```
 
 ---
 
-## Custom Fixture
+## Auth Pattern by Feature
+
+| Feature  | Auth approach |
+|----------|--------------|
+| `client` — post-login | `utils/fixture` injects pre-stored auth state — no UI login |
+| `client` — login flow | Manual navigation to login page, interact with form |
+| non-client | Perform UI login in the test using credentials from `utils/<featureName>/ApiUtils.ts` |
+
+---
+
+## Custom Fixture (client only)
 
 `utils/fixture.ts` exports a custom `test` that provides:
 - `page` — pre-authenticated browser page (no UI login needed)
 - `data` — typed test data: `productName`, `creditCardNumber`, `name`, `cvv`, `couponValue`, `countryName`
 
 Use `{ page, data }` destructuring to access both.
-
----
-
-## Test Data
-
-Single dataset: `import data from '../../utils/clientSiteSingleData.json'`
-Multiple datasets: `import dataSet from '../../utils/clientSiteMultipleData.json'` + `for...of` loop
-
-Never hardcode product names, card numbers, or credentials in test bodies.
+This fixture is for `client` tests only.
 
 ---
 
@@ -133,29 +151,18 @@ Never hardcode product names, card numbers, or credentials in test bodies.
 
 | Artifact | Pattern | Example |
 |----------|---------|---------|
-| Page Object file | `camelCasePage.ts` | `productPage.ts` |
-| Page Object class | `PascalCasePage` | `ProductPage` |
-| Test file | `camelCase.spec.ts` | `addToCart.spec.ts` |
+| Page Object file | `PascalCasePage.ts` | `LoginPage.ts` |
+| Page Object class | `PascalCasePage` | `LoginPage` |
+| Test file | `camelCase.spec.ts` | `login.spec.ts` |
 | Navigation method | `goToSite()` | `goToSite()` |
-| Assertion method | `verify` prefix | `verifyCartNavigation()` |
-
----
-
-## Assertions
-
-Assertions belong only in test files or page object `verify*` methods.
-Never place raw `expect()` calls outside of those.
-
----
-
-## Synchronization
-
-Use Playwright auto-waiting. Never use `page.waitForTimeout()`.
-Use `await locator.waitFor()` for elements that load slowly.
+| Assertion method | `verify` prefix | `verifyLoginSuccessful()` |
 
 ---
 
 ## Generation Policy
 
-Never modify files under `pages/`, `tests/`, or `utils/`.
-Only generate new artifacts inside `generated/pages/` and `generated/tests/`.
+Never modify files under `pages/`, `tests/`, or top-level `utils/*.ts`.
+Only generate new artifacts inside:
+- `generated/pages/<featureName>/`
+- `generated/tests/<featureName>/`
+- `utils/<featureName>/ApiUtils.ts` (if not already present)

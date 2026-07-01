@@ -7,18 +7,39 @@ Extend the existing framework. Never invent a new one.
 
 ---
 
-## Step 1 — Inspect Before Generating
+## Step 1 — Parse Feature Name
 
-Before writing any code:
+Extract `[featureName]` from the issue title.
+All paths, imports, and commands depend on this value.
 
-1. Read `pages/client/` and list all existing Page Object files.
-2. Read `pages/client/clientSitePageManager.ts` to see which pages are already registered.
-3. Determine which Page Objects the test scenario needs.
-4. Reuse existing ones. Only generate what is genuinely missing.
+| featureName | Generated pages               | Generated tests               |
+|-------------|-------------------------------|-------------------------------|
+| `client`    | `generated/pages/client/`     | `generated/tests/client/`     |
+| `saucedemo` | `generated/pages/saucedemo/`  | `generated/tests/saucedemo/`  |
+| `conduit`   | `generated/pages/conduit/`    | `generated/tests/conduit/`    |
+| other        | `generated/pages/<featureName>/` | `generated/tests/<featureName>/` |
 
 ---
 
-## Step 2 — Page Object Rules
+## Step 2 — Inspect Before Generating
+
+### For `client` features:
+1. Read `pages/client/` and list all existing Page Object files.
+2. Read `pages/client/clientSitePageManager.ts` to see which pages are registered.
+3. Also check `generated/pages/client/` for any previously AI-generated Page Objects.
+4. Reuse existing ones. Only generate what is genuinely missing.
+5. New Page Objects go to `generated/pages/client/`.
+
+### For non-client features (saucedemo, conduit, etc.):
+1. Check `generated/pages/<featureName>/` for any existing Page Objects.
+2. Use Playwright MCP to navigate the site URL and take a DOM snapshot.
+3. Extract locators from the snapshot — never guess locators for pages you haven't inspected.
+4. Generate Page Objects based on the live DOM.
+5. Do NOT create a PageManager — tests instantiate page objects directly.
+
+---
+
+## Step 3 — Page Object Rules
 
 Every Page Object must follow this exact structure:
 
@@ -35,7 +56,7 @@ export class ExamplePage {
     }
 
     async goToSite() {
-        await this.page.goto('https://rahulshettyacademy.com/client');
+        await this.page.goto('https://example.com');
     }
 
     async doSomething() { ... }
@@ -58,6 +79,7 @@ Rules:
 
 ## Locator Priority
 
+Always extract locators by inspecting the live page via Playwright MCP snapshot (non-client features).
 Use in this order:
 1. `getByRole` with accessible name
 2. `getByPlaceholder`
@@ -70,51 +92,63 @@ Never use XPath. Never use bare `.nth()` without a scoped container.
 
 ---
 
-## Step 3 — Test File Rules
+## Step 4 — Test File Rules
 
-**Choose the correct `test` import based on the scenario:**
-
-Tests that navigate to the login/register page themselves (pre-auth flows):
+### `client` — tests that navigate to login/register page:
 ```typescript
 import { test, expect } from '@playwright/test'
-import { LoginErrorPage } from '../pages/LoginErrorPage'
 
 test('descriptive test name', async ({ page }) => {
-    const loginErrorPage = new LoginErrorPage(page)
-    await loginErrorPage.goToSite()
-    // ... actions and assertions
+    const loginPage = new LoginPage(page)   // or use PageManager
+    await loginPage.goToSite()
+    // ...
 })
 ```
 
-Tests that start from an already-authenticated state (post-login flows):
+### `client` — tests starting from authenticated state:
 ```typescript
-import { test } from '../../utils/fixture'          // provides pre-authenticated page
+import { test } from '../../../utils/fixture'   // 3 levels up from generated/tests/client/
 import { expect } from '@playwright/test'
-import { PageManager } from '../../pages/client/clientSitePageManager'
+import { PageManager } from '../../../pages/client/clientSitePageManager'
 
-test('descriptive test name', async ({ page }, testInfo) => {
+test('descriptive test name', async ({ page }) => {
     const pageManager = new PageManager(page)
     const dashboardPage = pageManager.getDashboardPage()
     await dashboardPage.goToSite()
-    // ... actions via pageManager getters
-    // ... assertions via verify* methods or inline expect()
+    // ...
 })
 ```
 
-**Why this matters:** `utils/fixture` injects pre-stored auth state. If the test navigates
-to the login page manually after that, the browser context closes immediately.
-Rule: if the test touches the login form → use `@playwright/test`. If it starts post-login → use `utils/fixture`.
+### non-client features — inject token from utils/<featureName>/ApiUtils.ts:
+```typescript
+import { test, expect } from '@playwright/test'
+import { getToken, saucedemoConfig } from '../../../utils/saucedemo/ApiUtils'
+import { LoginPage } from '../../pages/saucedemo/LoginPage'
+
+test('descriptive test name', async ({ page }) => {
+    const loginPage = new LoginPage(page)
+    await loginPage.goToSite()
+    // perform login via UI or inject token as needed
+    await loginPage.verifyLoginSuccessful()
+})
+```
+
+Note: For saucedemo and similar sites with no login API, perform login via UI in the test.
+Only use `page.addInitScript()` token injection if the site has a real token-based auth API.
 
 ---
 
-## Step 4 — Where to Save Files
+## Step 5 — Where to Save Files
 
 | Artifact | Location |
 |----------|----------|
-| New Page Object | `generated/pages/<FeatureName>Page.ts` |
-| New test spec | `generated/tests/<featureName>.spec.ts` |
+| New Page Object — client | `generated/pages/client/<FeatureName>Page.ts` |
+| New Page Object — other | `generated/pages/<featureName>/<FeatureName>Page.ts` |
+| New test spec — client | `generated/tests/client/<testName>.spec.ts` |
+| New test spec — other | `generated/tests/<featureName>/<testName>.spec.ts` |
+| Auth utility — new site | `utils/<featureName>/ApiUtils.ts` |
 
-Never write to `pages/`, `tests/`, or `utils/`.
+Never write to `pages/`, `tests/`, or top-level `utils/*.ts` files.
 
 ---
 
