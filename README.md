@@ -275,20 +275,26 @@ Required GitHub variable:
 
 ---
 
-Replace Test Run command with below codes in playwright.yml, to make use of Azure Playwright Testing Service
+Replace Test Run command :
 
----------------
+```yaml
+- name: Run Playwright Tests
+  run: npm run client
+```
+with below codes in playwright.yml, to make use of Azure Playwright Testing Service
 
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - name: Run Playwright tests
-      env:
-        PLAYWRIGHT_SERVICE_URL: ${{ vars.PLAYWRIGHT_SERVICE_URL }}
-      run: npm run client
+```yaml
+- name: Azure Login
+  uses: azure/login@v2
+  with:
+    client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+- name: Run Playwright Tests
+  env:
+    PLAYWRIGHT_SERVICE_URL: ${{ vars.PLAYWRIGHT_SERVICE_URL }}
+  run: npm run azureRun
+```
 
 ## Framework Architecture
 
